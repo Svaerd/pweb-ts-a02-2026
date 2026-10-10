@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin - Antrian Rumah Sakit</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="dist/admin.js" defer></script>
+</head>
+<body>
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="index.html" class="navbar-brand">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/>
+          </svg>
+          <span>Antrian RS</span>
+          <span class="subtitle">Dashboard Admin</span>
+        </a>
+      </div>
+
+      <nav class="navbar-nav">
+        <a href="operator.html" class="btn btn-outline btn-sm">Panel Operator</a>
+        <a href="layar.html" target="_blank" class="btn btn-outline btn-sm">Layar Antrian &UpperRightArrow;</a>
+        <a href="ambil-antrian.html" target="_blank" class="btn btn-outline btn-sm">Ambil Antrian &UpperRightArrow;</a>
+
+        <div class="navbar-user">
+          <span id="user-display-name" style="font-weight: 600;">Petugas</span>
+          <span id="user-display-role" class="user-role">admin</span>
+        </div>
+
+        <button type="button" id="btn-logout" class="btn btn-secondary btn-sm" aria-label="Keluar">
+          Keluar
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Feedback Alerts -->
+    <div id="global-alert" class="alert" style="display: none;" role="alert">
+      <span id="global-alert-text"></span>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="dashboard-stats">
+      <div class="stat-card">
+        <div class="stat-label">Total Layanan (Poli)</div>
+        <div class="stat-value" id="stat-total-queues">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Menunggu Dipanggil</div>
+        <div class="stat-value" id="stat-waiting-tickets" style="color: var(--warning);">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Sedang Dipanggil</div>
+        <div class="stat-value" id="stat-calling-tickets" style="color: var(--info);">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Tiket Hari Ini</div>
+        <div class="stat-value" id="stat-total-tickets">0</div>
+      </div>
+    </div>
+
+    <!-- 2 Column Management Grid -->
+    <div class="grid-2" style="margin-bottom: 28px;">
+      <!-- Manajemen Jenis Antrian (CRUD) -->
+      <section class="card" aria-labelledby="heading-queue-types">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+          <div>
+            <h2 id="heading-queue-types" class="card-title">Manajemen Jenis Antrian</h2>
+            <p class="card-subtitle" style="margin-bottom: 0;">Kelola master poli dan loket pelayanan.</p>
+          </div>
+          <button type="button" id="btn-reset-queues" class="btn btn-danger btn-sm" title="Kosongkan seluruh antrian dan reset nomor tiket">
+            Reset Antrian
+          </button>
+        </div>
+
+        <!-- Form Tambah Jenis Antrian -->
+        <form id="form-add-queue" style="background: var(--surface-soft); padding: 16px; border-radius: var(--radius-btn); margin-bottom: 20px;">
+          <div style="font-weight: 600; font-size: 14px; margin-bottom: 12px; color: var(--ink);">Tambah Jenis Antrian Baru:</div>
+          <div style="display: grid; grid-template-columns: 120px 1fr auto; gap: 12px; align-items: flex-end;">
+            <div>
+              <label for="queue-code" style="font-size: 13px;">Kode (1 Huruf)</label>
+              <input 
+                type="text" 
+                id="queue-code" 
+                maxlength="1" 
+                placeholder="Misal: C" 
+                required 
+                style="text-transform: uppercase; font-weight: 700; text-align: center;"
+              >
+            </div>
+            <div>
+              <label for="queue-name" style="font-size: 13px;">Nama Layanan / Poli</label>
+              <input 
+                type="text" 
+                id="queue-name" 
+                placeholder="Misal: Poli Anak" 
+                required
+              >
+            </div>
+            <div>
+              <button type="submit" class="btn btn-primary" id="btn-add-queue">
+                Tambah
+              </button>
+            </div>
+          </div>
+          <div class="form-hint">Kode harus 1 huruf kapital unik (A-Z). Nama layanan tidak boleh duplikat.</div>
+        </form>
+
+        <!-- Tabel Jenis Antrian -->
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 70px;">Kode</th>
+                <th>Nama Layanan</th>
+                <th style="width: 100px;">Status</th>
+                <th style="width: 90px; text-align: center;">Counter</th>
+                <th style="width: 160px; text-align: right;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="table-body-queues">
+              <!-- Rendered by admin.ts -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Penerbitan Tiket Manual -->
+      <section class="card" aria-labelledby="heading-manual-ticket">
+        <h2 id="heading-manual-ticket" class="card-title">Penerbitan Tiket Manual</h2>
+        <p class="card-subtitle">Terbitkan tiket antrian untuk pengunjung yang membutuhkan bantuan langsung.</p>
+
+        <form id="form-issue-ticket">
+          <div class="form-group">
+            <label for="select-queue-type">Pilih Layanan / Poli</label>
+            <select id="select-queue-type" required>
+              <option value="">-- Pilih Jenis Antrian --</option>
+              <!-- Options rendered by admin.ts -->
+            </select>
+            <div class="form-hint">Hanya layanan dengan status Aktif yang dapat menerbitkan tiket.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="select-priority">Tingkat Prioritas</label>
+            <select id="select-priority" required>
+              <option value="Normal">Normal (Umum)</option>
+              <option value="Lansia">Lansia (Usia Lanjut)</option>
+              <option value="Disabilitas">Disabilitas (Kebutuhan Khusus)</option>
+              <option value="VIP">VIP (Prioritas Khusus)</option>
+            </select>
+            <div class="form-hint">Urutan panggilan: VIP &gt; Disabilitas &gt; Lansia &gt; Normal.</div>
+          </div>
+
+          <button type="submit" id="btn-issue-ticket" class="btn btn-primary" style="width: 100%; margin-top: 12px;">
+            Terbitkan Tiket Antrian
+          </button>
+        </form>
+
+        <!-- Info Penerbitan Terakhir -->
+        <div id="latest-ticket-card" style="margin-top: 24px; display: none;">
+          <div class="ticket-print-box">
+            <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--muted);">Tiket Baru Terbit</div>
+            <div class="ticket-number-display" id="latest-ticket-number">A-001</div>
+            <div style="font-weight: 600; font-size: 16px;" id="latest-ticket-service">Poli Umum</div>
+            <div style="margin-top: 8px;">
+              <span class="chip" id="latest-ticket-priority">Normal</span>
+            </div>
+            <div class="text-muted" style="font-size: 12px; margin-top: 8px;" id="latest-ticket-time">Waktu: -</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Tabel Daftar Tiket Antrian Saat Ini -->
+    <section class="card" aria-labelledby="heading-active-tickets">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h2 id="heading-active-tickets" class="card-title">Daftar Tiket Antrian</h2>
+          <p class="card-subtitle" style="margin-bottom: 0;">Seluruh tiket antrian yang tercatat di sistem hari ini.</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+          <div>
+            <select id="filter-status" style="min-height: 40px; padding: 8px 12px; font-size: 13px;">
+              <option value="ALL">Semua Status</option>
+              <option value="Menunggu">Menunggu</option>
+              <option value="Dipanggil">Dipanggil</option>
+              <option value="Selesai">Selesai</option>
+              <option value="Dilewati">Dilewati</option>
+            </select>
+          </div>
+          <div>
+            <select id="filter-queue" style="min-height: 40px; padding: 8px 12px; font-size: 13px;">
+              <option value="ALL">Semua Poli</option>
+              <!-- Options rendered by admin.ts -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 110px;">No. Tiket</th>
+              <th>Layanan / Poli</th>
+              <th style="width: 140px;">Prioritas</th>
+              <th style="width: 120px;">Status</th>
+              <th style="width: 140px;">Waktu Ambil</th>
+            </tr>
+          </thead>
+          <tbody id="table-body-tickets">
+            <!-- Rendered by admin.ts -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Konfirmasi / Notifikasi Tiket Baru -->
+  <div id="ticket-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modal-ticket-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modal-ticket-title" class="modal-title">Tiket Berhasil Diterbitkan</h3>
+        <button type="button" id="btn-close-modal" class="btn btn-outline btn-sm" aria-label="Tutup">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <p class="text-muted" style="font-size: 14px;">Silakan berikan nomor antrian ini kepada pasien/pengunjung:</p>
+        <div class="ticket-print-box">
+          <div style="font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 1px;">RUMAH SAKIT SEHAT BERSAMA</div>
+          <div class="ticket-number-display" id="modal-ticket-label">A-001</div>
+          <div style="font-size: 18px; font-weight: 600;" id="modal-ticket-service">Poli Umum</div>
+          <div style="margin-top: 8px;">
+            <span class="chip" id="modal-ticket-priority-chip">Normal</span>
+          </div>
+          <div class="text-muted" style="font-size: 12px; margin-top: 10px;" id="modal-ticket-time">Waktu: -</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btn-modal-print" class="btn btn-secondary">Cetak Tiket</button>
+        <button type="button" id="btn-modal-done" class="btn btn-primary">Selesai</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

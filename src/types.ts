@@ -3,20 +3,26 @@ export type TicketStatus = "Menunggu" | "Dipanggil" | "Selesai" | "Dilewati";
 export type Role = "admin" | "moderator" | "user";
 
 export interface QueueType {
-  code: string;
-  name: string;
-  active: boolean;
+  kode: string;
+  nama: string;
+  aktif: boolean;
   counter: number;
+  code?: string;
+  name?: string;
+  active?: boolean;
 }
 
 export interface Ticket {
   id: string;
-  code: string;
-  number: number;
+  kode: string;
+  nomor: number;
   label: string;
-  priority: Priority;
+  prioritas: Priority;
   status: TicketStatus;
   createdAt: number;
+  code?: string;
+  number?: number;
+  priority?: Priority;
 }
 
 export const PRIORITY_ORDER: Record<Priority, number> = {
@@ -27,11 +33,13 @@ export const PRIORITY_ORDER: Record<Priority, number> = {
 };
 
 export function compareTickets(a: Ticket, b: Ticket): number {
-  const p = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+  const pA = a.prioritas ?? a.priority ?? "Normal";
+  const pB = b.prioritas ?? b.priority ?? "Normal";
+  const p = PRIORITY_ORDER[pA] - PRIORITY_ORDER[pB];
   if (p !== 0) return p;
   return a.createdAt - b.createdAt;
 }
 
-export function formatLabel(code: string, n: number): string {
-  return `${code}-${String(n).padStart(3, "0")}`;
+export function formatLabel(kode: string, n: number): string {
+  return `${kode}-${String(n).padStart(3, "0")}`;
 }

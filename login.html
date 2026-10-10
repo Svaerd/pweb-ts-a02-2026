@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Antrian Rumah Sakit</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="dist/login.js" defer></script>
+</head>
+<body>
+  <div class="container-narrow">
+    <div style="text-align: center; margin-bottom: 28px;">
+      <a href="login.html" class="navbar-brand" style="justify-content: center; font-size: 24px;">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/>
+        </svg>
+        <span>Antrian RS</span>
+      </a>
+      <p class="text-muted" style="margin-top: 8px; font-size: 15px;">Sistem Pelayanan Antrian Rumah Sakit Terpadu</p>
+    </div>
+
+    <div class="card">
+      <h1 class="card-title">Masuk ke Akun</h1>
+      <p class="card-subtitle">Silakan masukkan username dan password petugas Anda.</p>
+
+      <div id="error-message" class="alert alert-error" style="display: none;" role="alert">
+        <span id="error-text"></span>
+      </div>
+
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            placeholder="Masukkan username" 
+            autocomplete="username"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            placeholder="Masukkan password" 
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <button type="submit" id="btn-submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+          <span id="btn-text">Masuk</span>
+        </button>
+      </form>
+
+      <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--hairline); font-size: 13px;">
+        <div style="font-weight: 600; margin-bottom: 8px; color: var(--ink);">Akun Uji Coba (DummyJSON):</div>
+        <div style="display: flex; flex-direction: column; gap: 6px; color: var(--body);">
+          <div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-admin" style="padding: 4px 10px; font-size: 12px; min-height: 28px;">
+              Gunakan Admin
+            </button>
+            <span class="text-muted" style="margin-left: 6px;">(emilys / emilyspass) &rarr; Dashboard Admin</span>
+          </div>
+          <div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-user" style="padding: 4px 10px; font-size: 12px; min-height: 28px;">
+              Gunakan Operator
+            </button>
+            <span class="text-muted" style="margin-left: 6px;">(michaelw / michaelwpass) &rarr; Halaman Operator</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 24px; font-size: 14px;">
+      <span class="text-muted">Akses Halaman Publik:</span><br>
+      <div style="display: flex; justify-content: center; gap: 16px; margin-top: 8px;">
+        <a href="ambil-antrian.html" style="color: var(--cta); font-weight: 600; text-decoration: none;">&rarr; Ambil Antrian Mandiri</a>
+        <a href="layar.html" style="color: var(--cta); font-weight: 600; text-decoration: none;">&rarr; Layar Monitor Antrian</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

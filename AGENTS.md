@@ -43,8 +43,8 @@ TS modules note: pages load `type="module"` scripts (modules are deferred by def
 // src/types.ts
 type Priority = "Normal" | "Lansia" | "Disabilitas" | "VIP";
 type TicketStatus = "Menunggu" | "Dipanggil" | "Selesai" | "Dilewati";
-interface QueueType { code: string; name: string; active: boolean; counter: number }
-interface Ticket { id: string; code: string; number: number; label: string; priority: Priority; status: TicketStatus; createdAt: number }
+interface QueueType { kode: string; nama: string; aktif: boolean; counter: number; code?: string; name?: string; active?: boolean }
+interface Ticket { id: string; kode: string; nomor: number; label: string; prioritas: Priority; status: TicketStatus; createdAt: number; code?: string; number?: number; priority?: Priority }
 ```
 
 - LocalStorage keys: `auth_token`, `auth_role`, `auth_name`, `queue_types`, `tickets`. Nothing else persists.
