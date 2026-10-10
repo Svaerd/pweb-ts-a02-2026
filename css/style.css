@@ -1,0 +1,75 @@
+:root {
+  --canvas: #ffffff;
+  --ink: #222222;
+  --muted: #6a6a6a;
+  --hairline: #dddddd;
+  --surface-soft: #f7f7f7;
+  --cta: #e00b41; /* AA-pass CTA red (Rausch #ff385c fails at 3.52) */
+  --cta-graphic: #ff385c; /* large graphics/icons only, never text */
+  --error: #c13515;
+  --radius-btn: 8px;
+  --radius-card: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: Circular, -apple-system, system-ui, Roboto, "Helvetica Neue", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.muted { color: var(--muted); }
+.error-text { color: var(--error); }
+
+button, a.btn {
+  min-height: 48px;
+  padding: 14px 24px;
+  border-radius: var(--radius-btn);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background: var(--cta);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+}
+
+.card {
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  padding: 24px;
+}
+
+input, select {
+  min-height: 48px;
+  padding: 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-btn);
+  font-size: 16px;
+}
+
+input:focus, select:focus, button:focus, a:focus {
+  outline: none;
+}
+
+/* Visible keyboard focus, 3:1 against white */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--hairline);
+  font-size: 14px;
+  font-weight: 500;
+}
