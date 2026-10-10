@@ -19,6 +19,26 @@
   --warning-bg: #fffbf0;
   --info: #0066cc;
   --info-bg: #f0f7ff;
+  --on-dark: #ffffff;
+  --border-strong: #c1c1c1;
+  --row-hover: #fafafa;
+  --error-border: #f7c3b9;
+  --error-bg-hover: #fbe5e0;
+  --error-strong: #a82b0f;
+  --success-border: #bce5cb;
+  --info-border: #c0deff;
+  --warning-border: #fce8b3;
+  --status-wait-border: #edd99b;
+  --status-call-border: #b2d5fb;
+  --prio-vip-bg: #fbf0ff;
+  --prio-vip-ink: #6a0dad;
+  --prio-vip-border: #ebd0f7;
+  --prio-disabilitas-bg: #eef7ff;
+  --prio-disabilitas-ink: #0b5cab;
+  --prio-disabilitas-border: #cae4fe;
+  --prio-lansia-bg: #fff8e8;
+  --prio-lansia-ink: #8c5b00;
+  --prio-lansia-border: #f7e1b5;
   --radius-btn: 8px;
   --radius-card: 14px;
   --radius-pill: 9999px;
@@ -49,11 +69,7 @@ h1, h2, h3, h4, p {
 .text-error { color: var(--error); }
 .text-success { color: var(--success); }
 
-/* Focus Accessibility */
-input:focus, select:focus, button:focus, a:focus {
-  outline: none;
-}
-
+/* Focus Accessibility: never remove the outline without this replacement */
 :focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
@@ -138,7 +154,7 @@ input:focus, select:focus, button:focus, a:focus {
   text-transform: capitalize;
   font-size: 12px;
   background: var(--ink);
-  color: #fff;
+  color: var(--on-dark);
   padding: 2px 8px;
   border-radius: var(--radius-pill);
   font-weight: 600;
@@ -162,14 +178,15 @@ button, .btn {
 }
 
 .btn-sm {
-  min-height: 36px;
+  min-height: 44px;
+  min-width: 44px;
   padding: 6px 12px;
   font-size: 13px;
 }
 
 .btn-primary {
   background: var(--cta);
-  color: #ffffff;
+  color: var(--on-dark);
   border-color: var(--cta);
 }
 
@@ -206,21 +223,21 @@ button, .btn {
 .btn-danger {
   background: var(--error-bg);
   color: var(--error);
-  border-color: #f7c3b9;
+  border-color: var(--error-border);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #fbe5e0;
+  background: var(--error-bg-hover);
 }
 
 .btn-danger-solid {
   background: var(--error);
-  color: #ffffff;
+  color: var(--on-dark);
   border-color: var(--error);
 }
 
 .btn-danger-solid:hover:not(:disabled) {
-  background: #a82b0f;
+  background: var(--error-strong);
 }
 
 /* Cards */
@@ -301,25 +318,25 @@ select:focus {
 .alert-error {
   background: var(--error-bg);
   color: var(--error);
-  border-color: #f7c3b9;
+  border-color: var(--error-border);
 }
 
 .alert-success {
   background: var(--success-bg);
   color: var(--success);
-  border-color: #bce5cb;
+  border-color: var(--success-border);
 }
 
 .alert-info {
   background: var(--info-bg);
   color: var(--info);
-  border-color: #c0deff;
+  border-color: var(--info-border);
 }
 
 .alert-warning {
   background: var(--warning-bg);
   color: var(--warning);
-  border-color: #fce8b3;
+  border-color: var(--warning-border);
 }
 
 /* Chips / Badges */
@@ -336,19 +353,19 @@ select:focus {
 .chip-status-menunggu {
   background: var(--warning-bg);
   color: var(--warning);
-  border-color: #edd99b;
+  border-color: var(--status-wait-border);
 }
 
 .chip-status-dipanggil {
   background: var(--info-bg);
   color: var(--info);
-  border-color: #b2d5fb;
+  border-color: var(--status-call-border);
 }
 
 .chip-status-selesai {
   background: var(--success-bg);
   color: var(--success);
-  border-color: #bce5cb;
+  border-color: var(--success-border);
 }
 
 .chip-status-dilewati {
@@ -358,21 +375,21 @@ select:focus {
 }
 
 .chip-priority-vip {
-  background: #fbf0ff;
-  color: #6a0dad;
-  border-color: #ebd0f7;
+  background: var(--prio-vip-bg);
+  color: var(--prio-vip-ink);
+  border-color: var(--prio-vip-border);
 }
 
 .chip-priority-disabilitas {
-  background: #eef7ff;
-  color: #0b5cab;
-  border-color: #cae4fe;
+  background: var(--prio-disabilitas-bg);
+  color: var(--prio-disabilitas-ink);
+  border-color: var(--prio-disabilitas-border);
 }
 
 .chip-priority-lansia {
-  background: #fff8e8;
-  color: #8c5b00;
-  border-color: #f7e1b5;
+  background: var(--prio-lansia-bg);
+  color: var(--prio-lansia-ink);
+  border-color: var(--prio-lansia-border);
 }
 
 .chip-priority-normal {
@@ -384,7 +401,7 @@ select:focus {
 .chip-active {
   background: var(--success-bg);
   color: var(--success);
-  border-color: #bce5cb;
+  border-color: var(--success-border);
 }
 
 .chip-inactive {
@@ -424,7 +441,7 @@ td {
 }
 
 tr:hover td {
-  background: #fafafa;
+  background: var(--row-hover);
 }
 
 /* Grids & Dashboard Layout */
@@ -524,7 +541,7 @@ tr:hover td {
 /* Quick Ticket Card (Print Ticket Simulation) */
 .ticket-print-box {
   background: var(--surface-soft);
-  border: 2px dashed var(--border-strong, #c1c1c1);
+  border: 2px dashed var(--border-strong);
   border-radius: var(--radius-btn);
   padding: 20px;
   text-align: center;

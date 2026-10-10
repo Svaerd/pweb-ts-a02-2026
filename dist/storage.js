@@ -5,6 +5,32 @@ export const KEYS = {
     queueTypes: "queue_types",
     tickets: "tickets",
 };
+export function isRecord(v) {
+    return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+export function isPriority(v) {
+    return v === "Normal" || v === "Lansia" || v === "Disabilitas" || v === "VIP";
+}
+export function isTicketStatus(v) {
+    return v === "Menunggu" || v === "Dipanggil" || v === "Selesai" || v === "Dilewati";
+}
+export function loadSessionFields() {
+    return {
+        token: localStorage.getItem(KEYS.token),
+        role: localStorage.getItem(KEYS.role),
+        name: localStorage.getItem(KEYS.name),
+    };
+}
+export function saveSessionFields(token, role, name) {
+    localStorage.setItem(KEYS.token, token);
+    localStorage.setItem(KEYS.role, role);
+    localStorage.setItem(KEYS.name, name);
+}
+export function clearSessionFields() {
+    localStorage.removeItem(KEYS.token);
+    localStorage.removeItem(KEYS.role);
+    localStorage.removeItem(KEYS.name);
+}
 function parseJsonArray(raw) {
     if (raw === null)
         return [];
@@ -17,7 +43,7 @@ function parseJsonArray(raw) {
     }
 }
 function toQueueType(v) {
-    if (typeof v !== "object" || v === null)
+    if (!isRecord(v))
         return null;
     const o = v;
     const kode = typeof o["kode"] === "string" ? o["kode"] : typeof o["code"] === "string" ? o["code"] : null;
@@ -37,7 +63,7 @@ function toQueueType(v) {
     };
 }
 function toTicket(v) {
-    if (typeof v !== "object" || v === null)
+    if (!isRecord(v))
         return null;
     const o = v;
     const id = typeof o["id"] === "string" ? o["id"] : null;
@@ -49,6 +75,8 @@ function toTicket(v) {
     if (id === null || kode === null || nomor === null || prioritasRaw === null || statusRaw === null || createdAt === null) {
         return null;
     }
+    if (!isPriority(prioritasRaw) || !isTicketStatus(statusRaw))
+        return null;
     const prioritas = prioritasRaw;
     const status = statusRaw;
     const label = typeof o["label"] === "string" ? o["label"] : `${kode}-${String(nomor).padStart(3, "0")}`;
@@ -74,7 +102,8 @@ export function loadQueueTypes() {
         if (q !== null)
             valid.push(q);
     }
-    if (valid.length > 0)
+    // Seed only on first run (key absent). An empty or fully-deleted list must stay empty.
+    if (raw !== null)
         return valid;
     const seed = [
         { kode: "A", nama: "Poli Umum", aktif: true, counter: 0, code: "A", name: "Poli Umum", active: true },

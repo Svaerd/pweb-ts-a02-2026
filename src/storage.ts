@@ -8,6 +8,45 @@ export const KEYS = {
   tickets: "tickets",
 } as const;
 
+export function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+export function isPriority(v: unknown): v is Priority {
+  return v === "Normal" || v === "Lansia" || v === "Disabilitas" || v === "VIP";
+}
+
+export function isTicketStatus(v: unknown): v is TicketStatus {
+  return v === "Menunggu" || v === "Dipanggil" || v === "Selesai" || v === "Dilewati";
+}
+
+// Session fields (auth_*). auth.ts validates them; only this module touches localStorage.
+export interface SessionFields {
+  token: string | null;
+  role: string | null;
+  name: string | null;
+}
+
+export function loadSessionFields(): SessionFields {
+  return {
+    token: localStorage.getItem(KEYS.token),
+    role: localStorage.getItem(KEYS.role),
+    name: localStorage.getItem(KEYS.name),
+  };
+}
+
+export function saveSessionFields(token: string, role: string, name: string): void {
+  localStorage.setItem(KEYS.token, token);
+  localStorage.setItem(KEYS.role, role);
+  localStorage.setItem(KEYS.name, name);
+}
+
+export function clearSessionFields(): void {
+  localStorage.removeItem(KEYS.token);
+  localStorage.removeItem(KEYS.role);
+  localStorage.removeItem(KEYS.name);
+}
+
 function parseJsonArray(raw: string | null): unknown[] {
   if (raw === null) return [];
   try {
@@ -19,8 +58,8 @@ function parseJsonArray(raw: string | null): unknown[] {
 }
 
 function toQueueType(v: unknown): QueueType | null {
-  if (typeof v !== "object" || v === null) return null;
-  const o = v as Record<string, unknown>;
+  if (!isRecord(v)) return null;
+  const o = v;
   const kode = typeof o["kode"] === "string" ? o["kode"] : typeof o["code"] === "string" ? o["code"] : null;
   const nama = typeof o["nama"] === "string" ? o["nama"] : typeof o["name"] === "string" ? o["name"] : null;
   const aktif = typeof o["aktif"] === "boolean" ? o["aktif"] : typeof o["active"] === "boolean" ? o["active"] : null;
@@ -38,8 +77,8 @@ function toQueueType(v: unknown): QueueType | null {
 }
 
 function toTicket(v: unknown): Ticket | null {
-  if (typeof v !== "object" || v === null) return null;
-  const o = v as Record<string, unknown>;
+  if (!isRecord(v)) return null;
+  const o = v;
   const id = typeof o["id"] === "string" ? o["id"] : null;
   const kode = typeof o["kode"] === "string" ? o["kode"] : typeof o["code"] === "string" ? o["code"] : null;
   const nomor = typeof o["nomor"] === "number" ? o["nomor"] : typeof o["number"] === "number" ? o["number"] : null;
@@ -50,8 +89,9 @@ function toTicket(v: unknown): Ticket | null {
   if (id === null || kode === null || nomor === null || prioritasRaw === null || statusRaw === null || createdAt === null) {
     return null;
   }
-  const prioritas = prioritasRaw as Priority;
-  const status = statusRaw as TicketStatus;
+  if (!isPriority(prioritasRaw) || !isTicketStatus(statusRaw)) return null;
+  const prioritas = prioritasRaw;
+  const status = statusRaw;
   const label = typeof o["label"] === "string" ? o["label"] : `${kode}-${String(nomor).padStart(3, "0")}`;
 
   return {
@@ -76,7 +116,8 @@ export function loadQueueTypes(): QueueType[] {
     const q = toQueueType(item);
     if (q !== null) valid.push(q);
   }
-  if (valid.length > 0) return valid;
+  // Seed only on first run (key absent). An empty or fully-deleted list must stay empty.
+  if (raw !== null) return valid;
   const seed: QueueType[] = [
     { kode: "A", nama: "Poli Umum", aktif: true, counter: 0, code: "A", name: "Poli Umum", active: true },
     { kode: "B", nama: "Poli Gigi", aktif: true, counter: 0, code: "B", name: "Poli Gigi", active: true },

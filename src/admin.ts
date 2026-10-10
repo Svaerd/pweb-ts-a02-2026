@@ -1,6 +1,6 @@
 import { requireAdmin, logout } from "./auth.js";
-import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets } from "./storage.js";
-import type { QueueType, Ticket, Priority } from "./types.js";
+import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority } from "./storage.js";
+import type { QueueType, Ticket } from "./types.js";
 import { formatLabel } from "./types.js";
 
 function initAdmin(): void {
@@ -25,6 +25,8 @@ function initAdmin(): void {
   const globalAlert = document.getElementById("global-alert");
   const globalAlertText = document.getElementById("global-alert-text");
 
+  let alertTimer: number | undefined;
+
   function showAlert(msg: string, type: "error" | "success" | "info" = "info"): void {
     if (globalAlert !== null && globalAlertText !== null) {
       globalAlert.className = `alert alert-${type}`;
@@ -32,10 +34,10 @@ function initAdmin(): void {
       globalAlert.style.display = "flex";
       window.scrollTo({ top: 0, behavior: "smooth" });
 
-      setTimeout(() => {
-        if (globalAlert !== null) {
-          globalAlert.style.display = "none";
-        }
+      // Restart the timer so an older alert cannot hide a newer one early.
+      window.clearTimeout(alertTimer);
+      alertTimer = window.setTimeout(() => {
+        globalAlert.style.display = "none";
       }, 5000);
     }
   }
@@ -50,9 +52,21 @@ function initAdmin(): void {
   const modalTicketPriorityChip = document.getElementById("modal-ticket-priority-chip");
   const modalTicketTime = document.getElementById("modal-ticket-time");
 
+  let focusBeforeModal: HTMLElement | null = null;
+
+  function showModal(): void {
+    if (ticketModal === null) return;
+    focusBeforeModal = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    ticketModal.style.display = "flex";
+    if (btnModalDone !== null) btnModalDone.focus();
+  }
+
   function hideModal(): void {
-    if (ticketModal !== null) {
-      ticketModal.style.display = "none";
+    if (ticketModal === null || ticketModal.style.display === "none") return;
+    ticketModal.style.display = "none";
+    if (focusBeforeModal !== null) {
+      focusBeforeModal.focus();
+      focusBeforeModal = null;
     }
   }
 
@@ -65,7 +79,24 @@ function initAdmin(): void {
   }
 
   window.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.key === "Escape") hideModal();
+    if (e.key === "Escape") {
+      hideModal();
+      return;
+    }
+    // Keep Tab inside the open dialog.
+    if (e.key === "Tab" && ticketModal !== null && ticketModal.style.display !== "none") {
+      const focusable = Array.from(ticketModal.querySelectorAll<HTMLElement>("button:not([disabled])"));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (first === undefined || last === undefined) return;
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
   });
 
   // 5. Render Functions
@@ -251,9 +282,15 @@ function initAdmin(): void {
     }
   }
 
+  // Skip re-rendering when nothing changed, so the 3s polling does not steal keyboard focus.
+  let lastSnapshot = "";
+
   function refreshAll(): void {
     const queues = loadQueueTypes();
     const tickets = loadTickets();
+    const snapshot = JSON.stringify([queues, tickets]);
+    if (snapshot === lastSnapshot) return;
+    lastSnapshot = snapshot;
     updateDashboardStats(queues, tickets);
     renderQueueTypesTable(queues);
     renderSelectQueueOptions(queues);
@@ -277,11 +314,17 @@ function initAdmin(): void {
     const target = queues.find((q) => q.kode === code);
     if (target === undefined) return;
 
-    const confirmed = window.confirm(`Apakah Anda yakin ingin menghapus jenis antrian '${target.nama}' (${target.kode})?`);
+    const tickets = loadTickets();
+    const remainingTickets = tickets.filter((t) => t.kode !== code);
+    const removedTickets = tickets.length - remainingTickets.length;
+
+    const extra = removedTickets > 0 ? ` ${removedTickets} tiket dengan kode ini juga akan ikut dihapus.` : "";
+    const confirmed = window.confirm(`Apakah Anda yakin ingin menghapus jenis antrian '${target.nama}' (${target.kode})?${extra}`);
     if (!confirmed) return;
 
-    const remaining = queues.filter((q) => q.kode !== code);
-    saveQueueTypes(remaining);
+    // Tickets go with their queue type, otherwise re-creating the same code would issue duplicate labels (A-001 twice).
+    saveQueueTypes(queues.filter((q) => q.kode !== code));
+    saveTickets(remainingTickets);
     refreshAll();
     showAlert(`Jenis antrian '${target.nama}' (${target.kode}) berhasil dihapus.`, "success");
   }
@@ -375,11 +418,17 @@ function initAdmin(): void {
       e.preventDefault();
 
       const chosenCode = selectQueueType.value;
-      const chosenPriority = selectPriority.value as Priority;
+      const chosenPriority = selectPriority.value;
 
       if (chosenCode === "") {
         showAlert("Silakan pilih jenis antrian terlebih dahulu.", "error");
         selectQueueType.focus();
+        return;
+      }
+
+      if (!isPriority(chosenPriority)) {
+        showAlert("Tingkat prioritas tidak valid. Pilih salah satu dari daftar.", "error");
+        selectPriority.focus();
         return;
       }
 
@@ -437,7 +486,7 @@ function initAdmin(): void {
         modalTicketPriorityChip.className = `chip chip-priority-${chosenPriority.toLowerCase()}`;
         modalTicketPriorityChip.textContent = chosenPriority;
         modalTicketTime.textContent = `Waktu: ${new Date(newTicket.createdAt).toLocaleTimeString("id-ID")}`;
-        ticketModal.style.display = "flex";
+        showModal();
       }
 
       showAlert(`Tiket nomor ${label} (${targetQueue.nama}) berhasil diterbitkan!`, "success");
