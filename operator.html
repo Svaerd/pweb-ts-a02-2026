@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Operator - Antrian Rumah Sakit</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="dist/operator.js" defer></script>
+</head>
+<body>
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="operator.html" class="navbar-brand">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/>
+          </svg>
+          <span>Antrian RS</span>
+          <span class="subtitle">Panel Operator</span>
+        </a>
+      </div>
+
+      <nav class="navbar-nav">
+        <a href="index.html" id="link-admin-dashboard" class="btn btn-outline btn-sm">Dashboard Admin</a>
+        <a href="layar.html" target="_blank" class="btn btn-outline btn-sm">Layar Antrian &UpperRightArrow;</a>
+        <a href="ambil-antrian.html" target="_blank" class="btn btn-outline btn-sm">Ambil Antrian &UpperRightArrow;</a>
+
+        <div class="navbar-user">
+          <span id="user-display-name" style="font-weight: 600;">Operator</span>
+          <span id="user-display-role" class="user-role">user</span>
+        </div>
+
+        <button type="button" id="btn-logout" class="btn btn-secondary btn-sm" aria-label="Keluar">
+          Keluar
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Feedback Alerts -->
+    <div id="operator-alert" class="alert" style="display: none;" role="alert">
+      <span id="operator-alert-text"></span>
+    </div>
+
+    <!-- Filter Loket / Poli -->
+    <div class="card" style="margin-bottom: 24px; padding: 16px 20px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <label for="select-operator-queue" style="font-size: 14px; font-weight: 600; margin-bottom: 0;">Filter Layanan / Loket Poli:</label>
+          <span class="text-muted" style="font-size: 13px; margin-left: 8px;">Pilih poli untuk fokus pada loket tertentu, atau pilih semua.</span>
+        </div>
+        <div style="min-width: 240px;">
+          <select id="select-operator-queue" style="padding: 8px 12px; font-size: 14px;">
+            <option value="ALL">Semua Poli Pelayanan</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calling Grid Layout: Sedang Dipanggil vs Antrian Berikutnya -->
+    <div class="grid-2" style="margin-bottom: 28px;">
+      <!-- Kartu Sedang Dipanggil -->
+      <section class="card" aria-labelledby="current-call-heading" style="display: flex; flex-direction: column;">
+        <div class="card-header" style="border-bottom: 1px solid var(--hairline); padding-bottom: 12px; margin-bottom: 16px;">
+          <h2 id="current-call-heading" class="card-title" style="font-size: 18px;">Sedang Dipanggil (Aktif)</h2>
+          <p class="card-subtitle">Pasien yang saat ini sedang dilayani di loket.</p>
+        </div>
+
+        <div id="current-ticket-container" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px 0;">
+          <div class="empty-state" id="current-empty-state">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <p>Tidak ada tiket yang sedang dipanggil saat ini.</p>
+            <span class="text-muted" style="font-size: 13px;">Klik &ldquo;Panggil Berikutnya&rdquo; untuk memanggil antrian pertama.</span>
+          </div>
+
+          <div id="current-ticket-detail" style="display: none; width: 100%; text-align: center;">
+            <div style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 600;">Nomor Antrian</div>
+            <div class="ticket-number-display" id="current-ticket-label" style="font-size: 64px; margin: 12px 0;">-</div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--ink); margin-bottom: 10px;" id="current-ticket-service">-</div>
+            <div style="margin-bottom: 12px;">
+              <span class="chip" id="current-ticket-priority-chip">Normal</span>
+            </div>
+            <div class="text-muted" style="font-size: 13px;" id="current-ticket-time">Waktu Ambil: -</div>
+          </div>
+        </div>
+
+        <!-- Operator Action Controls (3 Buttons) -->
+        <div style="border-top: 1px solid var(--hairline); padding-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+          <button type="button" id="btn-call-next" class="btn btn-primary" style="flex: 1; min-width: 160px;">
+            Panggil Berikutnya
+          </button>
+          <button type="button" id="btn-skip-ticket" class="btn btn-warning" style="flex: 1; min-width: 120px;" disabled>
+            Lewati
+          </button>
+          <button type="button" id="btn-complete-ticket" class="btn btn-secondary" style="flex: 1; min-width: 120px;" disabled>
+            Selesai
+          </button>
+        </div>
+      </section>
+
+      <!-- Antrian Berikutnya (Menunggu) -->
+      <section class="card" aria-labelledby="next-queue-heading">
+        <div class="card-header" style="border-bottom: 1px solid var(--hairline); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 id="next-queue-heading" class="card-title" style="font-size: 18px;">Antrian Berikutnya (Menunggu)</h2>
+            <p class="card-subtitle">Urutan pemanggilan otomatis: VIP &gt; Disabilitas &gt; Lansia &gt; Normal, lalu Waktu Datang.</p>
+          </div>
+          <div>
+            <span class="chip chip-status-menunggu" id="badge-total-waiting">0 Menunggu</span>
+          </div>
+        </div>
+
+        <div id="next-empty-state" class="empty-state" style="display: none;">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+          </svg>
+          <p>Antrian kosong. Tidak ada pasien menunggu saat ini.</p>
+        </div>
+
+        <div class="table-responsive" id="next-table-wrapper">
+          <table aria-label="Daftar Antrian Menunggu">
+            <thead>
+              <tr>
+                <th scope="col" style="width: 50px;">No</th>
+                <th scope="col">Tiket</th>
+                <th scope="col">Layanan</th>
+                <th scope="col">Prioritas</th>
+                <th scope="col">Waktu</th>
+              </tr>
+            </thead>
+            <tbody id="next-queue-tbody">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- Riwayat Panggilan Hari Ini -->
+    <section class="card" aria-labelledby="history-heading">
+      <div class="card-header" style="border-bottom: 1px solid var(--hairline); padding-bottom: 12px; margin-bottom: 16px;">
+        <h2 id="history-heading" class="card-title" style="font-size: 18px;">Riwayat Antrian Terkini</h2>
+        <p class="card-subtitle">Daftar seluruh tiket dengan status Dipanggil, Selesai, dan Dilewati.</p>
+      </div>
+
+      <div id="history-empty-state" class="empty-state" style="display: none;">
+        <p>Belum ada aktivitas pelayanan antrian.</p>
+      </div>
+
+      <div class="table-responsive" id="history-table-wrapper">
+        <table aria-label="Riwayat Antrian">
+          <thead>
+            <tr>
+              <th scope="col">Nomor Tiket</th>
+              <th scope="col">Layanan / Poli</th>
+              <th scope="col">Prioritas</th>
+              <th scope="col">Status</th>
+              <th scope="col">Waktu Dibuat</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+            <!-- Dynamically rendered -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

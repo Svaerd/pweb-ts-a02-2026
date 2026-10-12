@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layar Monitor Antrian - Antrian Rumah Sakit</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Display-specific visual styling */
+    .layar-body {
+      background: var(--surface-soft);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .layar-header {
+      background: var(--canvas);
+      border-bottom: 2px solid var(--hairline);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .layar-clock {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .layar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      padding: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    .layar-card {
+      background: var(--canvas);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .layar-card-header {
+      background: var(--ink);
+      color: var(--on-dark);
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .layar-card-body {
+      padding: 32px 24px;
+      text-align: center;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .layar-ticket-number {
+      font-size: 72px;
+      font-weight: 900;
+      color: var(--cta);
+      line-height: 1.1;
+      letter-spacing: 2px;
+      margin: 12px 0;
+    }
+
+    .layar-card-footer {
+      background: var(--surface-soft);
+      border-top: 1px solid var(--hairline);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+    }
+
+    /* Sound announcement banner */
+    .audio-notice {
+      background: var(--info-bg);
+      border-bottom: 1px solid var(--info-border);
+      color: var(--info);
+      padding: 8px 24px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+  <script type="module" src="dist/layar.js" defer></script>
+</head>
+<body class="layar-body">
+  <!-- Top Audio Notice & Activation -->
+  <div class="audio-notice" id="audio-notice">
+    <span>Fitur Suara Panggilan Otomatis Aktif (Web Speech API). Klik di mana saja atau tombol suara jika ingin mengaktifkan audio.</span>
+    <button type="button" id="btn-toggle-voice" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 12px;">
+      Suara: Nyala
+    </button>
+  </div>
+
+  <!-- Header Layar -->
+  <header class="layar-header">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <a href="layar.html" class="navbar-brand" style="font-size: 24px;">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/>
+        </svg>
+        <span>Antrian Rumah Sakit</span>
+      </a>
+      <span class="text-muted" style="border-left: 1px solid var(--hairline); padding-left: 16px; font-size: 16px; font-weight: 500;">
+        Monitor Informasi Panggilan
+      </span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <div class="layar-clock" id="display-clock">00:00:00</div>
+      <button type="button" id="btn-fullscreen" class="btn btn-outline btn-sm">
+        Layar Penuh (Full Screen)
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Grid -->
+  <main class="layar-grid" id="layar-cards-container">
+    <!-- Empty state when no queues exist -->
+    <div class="empty-state" id="layar-empty-state" style="grid-column: 1 / -1; display: none;">
+      <p style="font-size: 18px;">Belum ada poli/layanan aktif yang tersedia.</p>
+    </div>
+  </main>
+</body>
+</html>

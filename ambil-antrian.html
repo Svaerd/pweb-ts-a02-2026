@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ambil Antrian - Antrian Rumah Sakit</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="dist/ambil.js" defer></script>
+</head>
+<body>
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="ambil-antrian.html" class="navbar-brand">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/>
+          </svg>
+          <span>Antrian RS</span>
+          <span class="subtitle">Ambil Antrian Mandiri</span>
+        </a>
+      </div>
+
+      <nav class="navbar-nav">
+        <a href="layar.html" class="btn btn-outline btn-sm">Layar Antrian &UpperRightArrow;</a>
+        <a href="login.html" class="btn btn-secondary btn-sm">Petugas Masuk</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container-narrow" style="margin-top: 32px;">
+    <!-- Feedback Alerts -->
+    <div id="alert-box" class="alert" style="display: none;" role="alert">
+      <span id="alert-text"></span>
+    </div>
+
+    <!-- Self-Service Ticket Form Card -->
+    <section class="card" aria-labelledby="form-heading">
+      <h1 id="form-heading" class="card-title">Ambil Nomor Antrian</h1>
+      <p class="card-subtitle">Pilih poli pelayanan dan tingkat prioritas Anda untuk mencetak tiket.</p>
+
+      <form id="form-ambil-tiket" novalidate>
+        <div class="form-group">
+          <label for="select-queue">Pilih Layanan / Poli</label>
+          <select id="select-queue" name="queue" required>
+            <option value="">-- Memuat jenis antrian... --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="select-priority">Tingkat Prioritas</label>
+          <select id="select-priority" name="priority" required>
+            <option value="Normal">Normal</option>
+            <option value="Lansia">Lansia (Usia 60+)</option>
+            <option value="Disabilitas">Disabilitas / Kebutuhan Khusus</option>
+            <option value="VIP">VIP / Rujukan Khusus</option>
+          </select>
+          <small class="text-muted" style="display: block; margin-top: 6px; font-size: 13px;">
+            Pelayanan mendahulukan prioritas: VIP &gt; Disabilitas &gt; Lansia &gt; Normal.
+          </small>
+        </div>
+
+        <button type="submit" id="btn-submit-ticket" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+          Cetak Tiket Antrian
+        </button>
+      </form>
+    </section>
+
+    <!-- Hasil Cetak Tiket (Simulasi Cetak) -->
+    <section id="ticket-result-section" class="card" style="display: none; margin-top: 24px;" aria-labelledby="result-heading">
+      <h2 id="result-heading" class="card-title" style="text-align: center;">Tiket Antrian Anda</h2>
+      <p class="card-subtitle" style="text-align: center;">Simpan nomor tiket ini dan perhatikan monitor layar antrian.</p>
+
+      <div class="ticket-print-box">
+        <div style="font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Rumah Sakit Sehat Bersama</div>
+        <div style="font-size: 13px; color: var(--muted); margin-bottom: 8px;">Tiket Pelayanan Rawat Jalan</div>
+
+        <div class="ticket-number-display" id="result-ticket-label">A-001</div>
+
+        <div style="font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 8px;" id="result-ticket-service">Poli Umum</div>
+
+        <div style="display: flex; justify-content: center; gap: 8px; align-items: center; margin-bottom: 12px;">
+          <span class="chip" id="result-ticket-priority-chip">Normal</span>
+        </div>
+
+        <div style="font-size: 13px; color: var(--muted);" id="result-ticket-time">Waktu: -</div>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
+        <button type="button" id="btn-print-ticket" class="btn btn-outline">
+          Cetak Tiket (Print)
+        </button>
+        <button type="button" id="btn-new-ticket" class="btn btn-secondary">
+          Ambil Tiket Baru
+        </button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
