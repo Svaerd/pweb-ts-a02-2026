@@ -71,23 +71,12 @@ function initAmbil(): void {
     defaultOpt.textContent = "-- Pilih Poli Pelayanan --";
     selectQueue.appendChild(defaultOpt);
 
-    let matchFound = false;
     for (const q of activeQueues) {
       const opt = document.createElement("option");
       opt.value = q.kode;
       opt.textContent = `${q.kode} - ${q.nama}`;
-      if (q.kode === previousSelected) {
-        opt.selected = true;
-        matchFound = true;
-      }
+      if (q.kode === previousSelected) opt.selected = true;
       selectQueue.appendChild(opt);
-    }
-
-    if (!matchFound && activeQueues.length > 0) {
-      const first = activeQueues[0];
-      if (first !== undefined && selectQueue.options[1] !== undefined) {
-        selectQueue.selectedIndex = 1;
-      }
     }
   }
 
