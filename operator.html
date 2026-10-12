@@ -93,7 +93,7 @@
           <button type="button" id="btn-call-next" class="btn btn-primary" style="flex: 1; min-width: 160px;">
             Panggil Berikutnya
           </button>
-          <button type="button" id="btn-skip-ticket" class="btn btn-warning" style="flex: 1; min-width: 120px;" disabled>
+          <button type="button" id="btn-skip-ticket" class="btn btn-outline" style="flex: 1; min-width: 120px;" disabled>
             Lewati
           </button>
           <button type="button" id="btn-complete-ticket" class="btn btn-secondary" style="flex: 1; min-width: 120px;" disabled>
@@ -104,10 +104,10 @@
 
       <!-- Antrian Berikutnya (Menunggu) -->
       <section class="card" aria-labelledby="next-queue-heading">
-        <div class="card-header" style="border-bottom: 1px solid var(--hairline); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-          <div>
+        <div class="card-header" style="border-bottom: 1px solid var(--hairline); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div style="min-width: 0;">
             <h2 id="next-queue-heading" class="card-title" style="font-size: 18px;">Antrian Berikutnya (Menunggu)</h2>
-            <p class="card-subtitle">Urutan pemanggilan otomatis: VIP &gt; Disabilitas &gt; Lansia &gt; Normal, lalu Waktu Datang.</p>
+            <p class="card-subtitle" style="margin-bottom: 0;">Urutan pemanggilan otomatis: VIP &gt; Disabilitas &gt; Lansia &gt; Normal, lalu Waktu Datang.</p>
           </div>
           <div>
             <span class="chip chip-status-menunggu" id="badge-total-waiting">0 Menunggu</span>
@@ -126,10 +126,10 @@
             <thead>
               <tr>
                 <th scope="col" style="width: 50px;">No</th>
-                <th scope="col">Tiket</th>
+                <th scope="col">Nomor Tiket</th>
                 <th scope="col">Layanan</th>
                 <th scope="col">Prioritas</th>
-                <th scope="col">Waktu</th>
+                <th scope="col" style="text-align: right;">Waktu</th>
               </tr>
             </thead>
             <tbody id="next-queue-tbody">
@@ -159,7 +159,7 @@
               <th scope="col">Layanan / Poli</th>
               <th scope="col">Prioritas</th>
               <th scope="col">Status</th>
-              <th scope="col">Waktu Dibuat</th>
+              <th scope="col" style="text-align: right;">Waktu</th>
             </tr>
           </thead>
           <tbody id="history-tbody">
