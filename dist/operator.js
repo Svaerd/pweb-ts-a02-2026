@@ -1,6 +1,6 @@
 import { requireAuth, logout } from "./auth.js";
 import { loadQueueTypes, loadTickets, saveTickets } from "./storage.js";
-import { compareTickets } from "./types.js";
+import { compareTickets, escapeHtml } from "./types.js";
 function initOperator() {
     // 1. Enforce Auth Guard (User or Admin/Moderator allowed)
     const session = requireAuth();
@@ -188,10 +188,10 @@ function initOperator() {
                 const timeStr = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
                 tr.innerHTML = `
           <td style="font-weight: 600; color: var(--muted);">${idx + 1}</td>
-          <td><strong>${t.label}</strong></td>
-          <td>${t.kode} - ${serviceName}</td>
+          <td><strong>${escapeHtml(t.label)}</strong></td>
+          <td>${escapeHtml(t.kode)} - ${escapeHtml(serviceName)}</td>
           <td><span class="chip ${getPriorityClass(t.prioritas)}">${t.prioritas}</span></td>
-          <td class="text-muted">${timeStr}</td>
+          <td class="text-muted" style="text-align: right;">${timeStr}</td>
         `;
                 nextQueueTbody.appendChild(tr);
             });
@@ -221,11 +221,11 @@ function initOperator() {
                 const d = new Date(t.createdAt);
                 const timeStr = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
                 tr.innerHTML = `
-          <td><strong>${t.label}</strong></td>
-          <td>${t.kode} - ${serviceName}</td>
+          <td><strong>${escapeHtml(t.label)}</strong></td>
+          <td>${escapeHtml(t.kode)} - ${escapeHtml(serviceName)}</td>
           <td><span class="chip ${getPriorityClass(t.prioritas)}">${t.prioritas}</span></td>
           <td><span class="chip ${getStatusClass(t.status)}">${t.status}</span></td>
-          <td class="text-muted">${timeStr}</td>
+          <td class="text-muted" style="text-align: right;">${timeStr}</td>
         `;
                 historyTbody.appendChild(tr);
             });

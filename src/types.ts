@@ -43,3 +43,16 @@ export function compareTickets(a: Ticket, b: Ticket): number {
 export function formatLabel(kode: string, n: number): string {
   return `${kode}-${String(n).padStart(3, "0")}`;
 }
+
+// Escape stored user text (queue names) before it goes into innerHTML.
+export function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => {
+    switch (c) {
+      case "&": return "&amp;";
+      case "<": return "&lt;";
+      case ">": return "&gt;";
+      case '"': return "&quot;";
+      default: return "&#39;";
+    }
+  });
+}

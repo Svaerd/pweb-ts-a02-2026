@@ -1,4 +1,5 @@
 import { loadQueueTypes, loadTickets } from "./storage.js";
+import { escapeHtml } from "./types.js";
 function initLayar() {
     const container = document.getElementById("layar-cards-container");
     const emptyState = document.getElementById("layar-empty-state");
@@ -121,7 +122,7 @@ function initLayar() {
             const cardHeader = document.createElement("div");
             cardHeader.className = "layar-card-header";
             cardHeader.innerHTML = `
-        <span style="font-size: 20px; font-weight: 700;">${q.kode} - ${q.nama}</span>
+        <span style="font-size: 20px; font-weight: 700;">${escapeHtml(q.kode)} - ${escapeHtml(q.nama)}</span>
         <span class="chip" style="background: rgba(255,255,255,0.2); color: white; border: none; font-size: 13px;">Loket Aktif</span>
       `;
             const cardBody = document.createElement("div");
