@@ -1,4 +1,4 @@
-import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority } from "./storage.js";
+import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority, nextTicketNumber } from "./storage.js";
 import type { QueueType, Ticket } from "./types.js";
 import { formatLabel } from "./types.js";
 
@@ -128,9 +128,9 @@ function initAmbil(): void {
         return;
       }
 
-      // Increment counter
-      targetQueue.counter += 1;
-      const newNumber = targetQueue.counter;
+      const tickets = loadTickets();
+      const newNumber = nextTicketNumber(targetQueue, tickets);
+      targetQueue.counter = newNumber;
       const label = formatLabel(targetQueue.kode, newNumber);
 
       const newTicket: Ticket = {
@@ -143,7 +143,6 @@ function initAmbil(): void {
         createdAt: Date.now(),
       };
 
-      const tickets = loadTickets();
       tickets.push(newTicket);
 
       saveQueueTypes(queues);

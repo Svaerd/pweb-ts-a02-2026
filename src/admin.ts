@@ -1,5 +1,5 @@
 import { requireAdmin, logout } from "./auth.js";
-import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority } from "./storage.js";
+import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority, nextTicketNumber } from "./storage.js";
 import type { QueueType, Ticket } from "./types.js";
 import { formatLabel } from "./types.js";
 
@@ -458,9 +458,9 @@ function initAdmin(): void {
         return;
       }
 
-      // Increment counter
-      targetQueue.counter += 1;
-      const newNumber = targetQueue.counter;
+      const tickets = loadTickets();
+      const newNumber = nextTicketNumber(targetQueue, tickets);
+      targetQueue.counter = newNumber;
       const label = formatLabel(targetQueue.kode, newNumber);
 
       const newTicket: Ticket = {
@@ -473,7 +473,6 @@ function initAdmin(): void {
         createdAt: Date.now(),
       };
 
-      const tickets = loadTickets();
       tickets.push(newTicket);
 
       saveQueueTypes(queues);

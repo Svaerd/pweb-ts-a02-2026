@@ -1,4 +1,4 @@
-import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority } from "./storage.js";
+import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority, nextTicketNumber } from "./storage.js";
 import { formatLabel } from "./types.js";
 function initAmbil() {
     const formAmbil = document.getElementById("form-ambil-tiket");
@@ -60,22 +60,13 @@ function initAmbil() {
         defaultOpt.value = "";
         defaultOpt.textContent = "-- Pilih Poli Pelayanan --";
         selectQueue.appendChild(defaultOpt);
-        let matchFound = false;
         for (const q of activeQueues) {
             const opt = document.createElement("option");
             opt.value = q.kode;
             opt.textContent = `${q.kode} - ${q.nama}`;
-            if (q.kode === previousSelected) {
+            if (q.kode === previousSelected)
                 opt.selected = true;
-                matchFound = true;
-            }
             selectQueue.appendChild(opt);
-        }
-        if (!matchFound && activeQueues.length > 0) {
-            const first = activeQueues[0];
-            if (first !== undefined && selectQueue.options[1] !== undefined) {
-                selectQueue.selectedIndex = 1;
-            }
         }
     }
     if (btnPrint !== null) {
@@ -120,9 +111,9 @@ function initAmbil() {
                 renderQueueOptions();
                 return;
             }
-            // Increment counter
-            targetQueue.counter += 1;
-            const newNumber = targetQueue.counter;
+            const tickets = loadTickets();
+            const newNumber = nextTicketNumber(targetQueue, tickets);
+            targetQueue.counter = newNumber;
             const label = formatLabel(targetQueue.kode, newNumber);
             const newTicket = {
                 id: typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `t_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -133,7 +124,6 @@ function initAmbil() {
                 status: "Menunggu",
                 createdAt: Date.now(),
             };
-            const tickets = loadTickets();
             tickets.push(newTicket);
             saveQueueTypes(queues);
             saveTickets(tickets);

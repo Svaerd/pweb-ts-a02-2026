@@ -150,3 +150,12 @@ export function saveTickets(t) {
     }));
     localStorage.setItem(KEYS.tickets, JSON.stringify(normalized));
 }
+// Next number for a queue, skipping numbers already used so two tabs cannot print the same label.
+// shortcut: last-write-wins if two tabs save in the same millisecond; upgrade to a real backend if that matters.
+export function nextTicketNumber(queue, tickets) {
+    const used = new Set(tickets.filter((t) => t.kode === queue.kode).map((t) => t.nomor));
+    let n = queue.counter + 1;
+    while (used.has(n))
+        n += 1;
+    return n;
+}
