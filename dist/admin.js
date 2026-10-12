@@ -1,5 +1,5 @@
 import { requireAdmin, logout } from "./auth.js";
-import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority } from "./storage.js";
+import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority, nextTicketNumber } from "./storage.js";
 import { formatLabel } from "./types.js";
 function initAdmin() {
     // 1. Enforce Auth & Role Guard
@@ -141,26 +141,41 @@ function initAdmin() {
             tdCounter.textContent = String(q.counter);
             tr.appendChild(tdCounter);
             const tdAction = document.createElement("td");
-            tdAction.style.textAlign = "right";
-            // Toggle Active Button
-            const btnToggle = document.createElement("button");
-            btnToggle.type = "button";
-            btnToggle.className = `btn btn-sm ${q.aktif ? "btn-secondary" : "btn-primary"}`;
-            btnToggle.style.marginRight = "6px";
-            btnToggle.textContent = q.aktif ? "Nonaktifkan" : "Aktifkan";
-            btnToggle.addEventListener("click", () => {
-                toggleQueueActive(q.kode);
-            });
-            tdAction.appendChild(btnToggle);
-            // Delete Button
-            const btnDelete = document.createElement("button");
-            btnDelete.type = "button";
-            btnDelete.className = "btn btn-danger btn-sm";
-            btnDelete.textContent = "Hapus";
-            btnDelete.addEventListener("click", () => {
-                deleteQueueType(q.kode);
-            });
-            tdAction.appendChild(btnDelete);
+            tdAction.className = "actions";
+            // One list drives both the inline buttons and the mobile kebab menu.
+            const rowActions = [
+                {
+                    label: q.aktif ? "Nonaktifkan" : "Aktifkan",
+                    className: q.aktif ? "btn-secondary" : "btn-primary",
+                    run: () => toggleQueueActive(q.kode),
+                },
+                { label: "Hapus", className: "btn-danger", run: () => deleteQueueType(q.kode) },
+            ];
+            const kebab = document.createElement("div");
+            kebab.className = "kebab";
+            const kebabBtn = document.createElement("button");
+            kebabBtn.type = "button";
+            kebabBtn.textContent = "⋮";
+            kebabBtn.setAttribute("aria-label", "Aksi lain");
+            const menu = document.createElement("ul");
+            for (const action of rowActions) {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = `btn btn-sm ${action.className}`;
+                btn.textContent = action.label;
+                btn.addEventListener("click", action.run);
+                tdAction.appendChild(btn);
+                const li = document.createElement("li");
+                const menuBtn = document.createElement("button");
+                menuBtn.type = "button";
+                menuBtn.textContent = action.label;
+                menuBtn.addEventListener("click", action.run);
+                li.appendChild(menuBtn);
+                menu.appendChild(li);
+            }
+            kebab.appendChild(kebabBtn);
+            kebab.appendChild(menu);
+            tdAction.appendChild(kebab);
             tr.appendChild(tdAction);
             tbody.appendChild(tr);
         }
@@ -383,9 +398,9 @@ function initAdmin() {
                 showAlert("Jenis antrian tidak ditemukan atau berstatus nonaktif.", "error");
                 return;
             }
-            // Increment counter
-            targetQueue.counter += 1;
-            const newNumber = targetQueue.counter;
+            const tickets = loadTickets();
+            const newNumber = nextTicketNumber(targetQueue, tickets);
+            targetQueue.counter = newNumber;
             const label = formatLabel(targetQueue.kode, newNumber);
             const newTicket = {
                 id: typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `t_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -396,7 +411,6 @@ function initAdmin() {
                 status: "Menunggu",
                 createdAt: Date.now(),
             };
-            const tickets = loadTickets();
             tickets.push(newTicket);
             saveQueueTypes(queues);
             saveTickets(tickets);

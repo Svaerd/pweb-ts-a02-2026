@@ -153,28 +153,46 @@ function initAdmin(): void {
       tr.appendChild(tdCounter);
 
       const tdAction = document.createElement("td");
-      tdAction.style.textAlign = "right";
+      tdAction.className = "actions";
 
-      // Toggle Active Button
-      const btnToggle = document.createElement("button");
-      btnToggle.type = "button";
-      btnToggle.className = `btn btn-sm ${q.aktif ? "btn-secondary" : "btn-primary"}`;
-      btnToggle.style.marginRight = "6px";
-      btnToggle.textContent = q.aktif ? "Nonaktifkan" : "Aktifkan";
-      btnToggle.addEventListener("click", () => {
-        toggleQueueActive(q.kode);
-      });
-      tdAction.appendChild(btnToggle);
+      // One list drives both the inline buttons and the mobile kebab menu.
+      const rowActions: Array<{ label: string; className: string; run: () => void }> = [
+        {
+          label: q.aktif ? "Nonaktifkan" : "Aktifkan",
+          className: q.aktif ? "btn-secondary" : "btn-primary",
+          run: () => toggleQueueActive(q.kode),
+        },
+        { label: "Hapus", className: "btn-danger", run: () => deleteQueueType(q.kode) },
+      ];
 
-      // Delete Button
-      const btnDelete = document.createElement("button");
-      btnDelete.type = "button";
-      btnDelete.className = "btn btn-danger btn-sm";
-      btnDelete.textContent = "Hapus";
-      btnDelete.addEventListener("click", () => {
-        deleteQueueType(q.kode);
-      });
-      tdAction.appendChild(btnDelete);
+      const kebab = document.createElement("div");
+      kebab.className = "kebab";
+      const kebabBtn = document.createElement("button");
+      kebabBtn.type = "button";
+      kebabBtn.textContent = "⋮";
+      kebabBtn.setAttribute("aria-label", "Aksi lain");
+      const menu = document.createElement("ul");
+
+      for (const action of rowActions) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `btn btn-sm ${action.className}`;
+        btn.textContent = action.label;
+        btn.addEventListener("click", action.run);
+        tdAction.appendChild(btn);
+
+        const li = document.createElement("li");
+        const menuBtn = document.createElement("button");
+        menuBtn.type = "button";
+        menuBtn.textContent = action.label;
+        menuBtn.addEventListener("click", action.run);
+        li.appendChild(menuBtn);
+        menu.appendChild(li);
+      }
+
+      kebab.appendChild(kebabBtn);
+      kebab.appendChild(menu);
+      tdAction.appendChild(kebab);
 
       tr.appendChild(tdAction);
       tbody.appendChild(tr);
