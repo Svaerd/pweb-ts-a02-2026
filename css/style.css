@@ -144,10 +144,12 @@ h1, h2, h3, h4, p {
   align-items: center;
   gap: 10px;
   padding: 6px 12px;
+  min-height: 44px;
   background: var(--surface-soft);
   border: 1px solid var(--hairline-soft);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-btn);
   font-size: 14px;
+  white-space: nowrap;
 }
 
 .navbar-user .user-role {
@@ -339,15 +341,88 @@ select:focus {
   border-color: var(--warning-border);
 }
 
+/* Action container: horizontal layout */
+.actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+}
+
+/* Kebab menu: hidden on desktop, shown when the cell gets too narrow */
+.kebab {
+  position: relative;
+  display: none;
+}
+.kebab > button {
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+}
+.kebab ul {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin: 4px 0 0;
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-btn);
+  box-shadow: var(--shadow-card);
+  list-style: none;
+  padding: 0.5rem 0;
+  min-width: 150px;
+  display: none;
+  z-index: 10;
+}
+/* focus-within keeps the menu keyboard-operable, never hover-only */
+.kebab:hover ul,
+.kebab:focus-within ul {
+  display: block;
+}
+.kebab li button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.kebab li button:hover {
+  background: var(--row-hover);
+}
+
+/* Responsive: hide the inline buttons, keep the cell and its kebab visible */
+@media (max-width: 768px) {
+  .actions > .btn {
+    display: none;
+  }
+  .kebab {
+    display: block;
+  }
+}
+
 /* Chips / Badges */
 .chip {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   padding: 4px 10px;
   border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 600;
   border: 1px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .chip-status-menunggu {
