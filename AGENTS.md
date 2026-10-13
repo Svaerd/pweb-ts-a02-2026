@@ -4,7 +4,7 @@
 
 Hospital queue app (Antrian Rumah Sakit). Native from scratch: HTML + CSS + TypeScript only.
 No JS/CSS framework or library (no React, Vue, jQuery, Bootstrap, Tailwind). No template.
-Pages: `login.html`, `index.html` (admin dashboard), `operator.html`, `layar.html` (public display), `ambil-antrian.html` (public self-service).
+Pages: `login.html`, `index.html` (admin dashboard), `operator.html`, `layar.html` (display), `ambil-antrian.html` (self-service). All pages except `login.html` require login.
 
 Demo online starts 14 Oct 2026. Deadline 13 Oct 2026 23:59. Repo public `pweb-ts-p01-2026`. Submit via `https://its.id/m/SubmitPemweb2026`.
 Load split for 2 people: Person 1 = toolchain + login + admin; Person 2 = operator + layar + ambil-antrian. Shared contract below is frozen; change only by agreement.
@@ -51,7 +51,7 @@ interface Ticket { id: string; kode: string; nomor: number; label: string; prior
 - Ticket label format: `CODE-NNN`, e.g. `A-001`. Counter is per queue code, resets on Reset Antrian.
 - Queue code: exactly 1 uppercase letter. Reject duplicate code/name (case-insensitive). Inactive queue cannot issue new tickets.
 - Call order: priority `VIP > Disabilitas > Lansia > Normal`, then FIFO by `createdAt`.
-- Roles: API `POST https://dummyjson.com/auth/login` returns role. `moderator` has same rights as `admin`. Admin pages require `admin|moderator`; operator requires any logged-in user; `layar.html` and `ambil-antrian.html` are public.
+- Roles: API `POST https://dummyjson.com/auth/login` returns role. `moderator` has same rights as `admin`. Access policy lives in one table, `ROLE_ACCESS` in `auth.ts`: `index.html` = admin|moderator; `operator.html`, `layar.html`, `ambil-antrian.html` = any logged-in role (admin|moderator|user). No public pages. Not logged in -> `login.html?next=<page>`; logged in but role not allowed -> own home page + `?denied=<page>` (shows "Akses ditolak").
 - Test users reference: `GET https://dummyjson.com/users/filter?key=role&value=admin` and `...&value=user`.
 
 ## Code rules
@@ -60,15 +60,15 @@ interface Ticket { id: string; kode: string; nomor: number; label: string; prior
 - `unknown` for all outside data (API JSON, LocalStorage parse, form input); validate with narrowing before use.
 - Public functions need explicit param + return types. Types live in `src/types.ts`, re-exported, imported with `import type`.
 - `storage.ts` is the only module touching `localStorage`. Pages never call `localStorage` directly.
-- `auth.ts` owns guards: `requireAuth()` (any login), `requireAdmin()` (admin/moderator), `logout()` clears `auth_*` keys and redirects to `login.html`.
+- `auth.ts` owns guards: `protectPage(page)` (every page module calls it first; checks `ROLE_ACCESS`, re-checks on `pageshow` and `storage` events so logout in another tab / Back button cannot expose a page), `requireAccess(page)` (one-off re-check), `logout()` clears `auth_*` keys and redirects to `login.html`.
 - `try/catch` on every network call; surface loading / empty / error states as visible text, never color-only, never spinner-only.
 - No new dependency without approval. `devDependencies` is `typescript` only.
 
 ## Auth flow
 
 1. `login.ts` POSTs `{username, password}` to dummyjson, shows loading state on button, catches network/credential errors as text.
-2. On success saves token/role/firstName, redirects: admin/moderator to `index.html`, user to `operator.html`.
-3. Guards run first in each protected page module before any render.
+2. On success saves token/role/firstName, redirects to `next` (only if that role may open it), otherwise admin/moderator to `index.html`, user to `operator.html`.
+3. Guards (`protectPage`) run first in each protected page module before any render.
 
 ## Realtime rule
 

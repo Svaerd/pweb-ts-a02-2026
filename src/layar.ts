@@ -1,8 +1,27 @@
+import { protectPage, logout } from "./auth.js";
 import { loadQueueTypes, loadTickets } from "./storage.js";
 import type { QueueType, Ticket } from "./types.js";
 import { escapeHtml } from "./types.js";
 
 function initLayar(): void {
+  // Layar now requires login too (any role). Guard runs before anything renders.
+  const session = protectPage("layar.html");
+
+  const userDisplayName = document.getElementById("user-display-name");
+  const userDisplayRole = document.getElementById("user-display-role");
+  const btnLogout = document.getElementById("btn-logout");
+  const linkAdmin = document.getElementById("link-admin-dashboard");
+  if (userDisplayName !== null) userDisplayName.textContent = session.name;
+  if (userDisplayRole !== null) userDisplayRole.textContent = session.role;
+  if (linkAdmin !== null && session.role !== "admin" && session.role !== "moderator") {
+    linkAdmin.style.display = "none";
+  }
+  if (btnLogout !== null) {
+    btnLogout.addEventListener("click", () => {
+      logout();
+    });
+  }
+
   const container = document.getElementById("layar-cards-container");
   const emptyState = document.getElementById("layar-empty-state");
   const clockEl = document.getElementById("display-clock");

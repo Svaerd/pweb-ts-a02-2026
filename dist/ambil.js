@@ -1,6 +1,21 @@
 import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority, nextTicketNumber } from "./storage.js";
 import { formatLabel } from "./types.js";
+import { protectPage, requireAccess, logout } from "./auth.js";
 function initAmbil() {
+    // Every role must be logged in to take a ticket (guard runs before any render).
+    const session = protectPage("ambil-antrian.html");
+    const userDisplayName = document.getElementById("user-display-name");
+    const userDisplayRole = document.getElementById("user-display-role");
+    const btnLogout = document.getElementById("btn-logout");
+    if (userDisplayName !== null)
+        userDisplayName.textContent = session.name;
+    if (userDisplayRole !== null)
+        userDisplayRole.textContent = session.role;
+    if (btnLogout !== null) {
+        btnLogout.addEventListener("click", () => {
+            logout();
+        });
+    }
     const formAmbil = document.getElementById("form-ambil-tiket");
     const selectQueue = document.getElementById("select-queue");
     const selectPriority = document.getElementById("select-priority");
@@ -90,6 +105,8 @@ function initAmbil() {
         formAmbil.addEventListener("submit", (e) => {
             e.preventDefault();
             clearAlert();
+            // Re-check right before writing a ticket: session may be gone since the page loaded.
+            requireAccess("ambil-antrian.html");
             if (selectQueue === null || selectPriority === null)
                 return;
             const chosenCode = selectQueue.value.trim().toUpperCase();

@@ -1,4 +1,4 @@
-import { clearSessionFields, isRecord, loadSessionFields, saveSessionFields } from "./storage.js";
+import { KEYS, clearSessionFields, isRecord, loadSessionFields, saveSessionFields } from "./storage.js";
 const API_BASE = "https://dummyjson.com";
 const MSG_CREDENTIALS = "Username atau password salah.";
 const MSG_NETWORK = "Koneksi ke server gagal. Periksa jaringan internet Anda lalu coba lagi.";
@@ -21,25 +21,69 @@ export function logout() {
     clearSessionFields();
     window.location.href = "login.html";
 }
-// Guards: call first in protected page modules, before any render.
-// If the check fails the browser is sent to login.html and an Error is thrown,
-// so the rest of the page module never runs with a missing session.
-function redirectToLogin() {
-    window.location.replace("login.html");
-    throw new Error("Sesi tidak valid, mengalihkan ke login.html");
+export const ALL_ROLES = ["admin", "moderator", "user"];
+const ADMIN_ROLES = ["admin", "moderator"];
+export const ROLE_ACCESS = {
+    "index.html": ADMIN_ROLES, // Dashboard Admin: kelola jenis antrian, reset antrian
+    "operator.html": ALL_ROLES, // Panel Operator: panggil / lewati / selesaikan tiket
+    "layar.html": ALL_ROLES, // Layar monitor panggilan
+    "ambil-antrian.html": ALL_ROLES, // Ambil tiket mandiri
+};
+export const PAGE_TITLES = {
+    "index.html": "Dashboard Admin",
+    "operator.html": "Panel Operator",
+    "layar.html": "Layar Antrian",
+    "ambil-antrian.html": "Ambil Antrian",
+};
+export function isProtectedPage(v) {
+    return typeof v === "string" && Object.prototype.hasOwnProperty.call(ROLE_ACCESS, v);
 }
-export function requireAuth() {
+export function canAccess(role, page) {
+    return ROLE_ACCESS[page].includes(role);
+}
+// Landing page after login when no (allowed) `next` page was requested.
+export function homeFor(role) {
+    return role === "admin" || role === "moderator" ? "index.html" : "operator.html";
+}
+// Only known pages may be used as `next` (no open redirect), and only if the role may open them.
+export function readNextPage(search) {
+    const raw = new URLSearchParams(search).get("next");
+    return isProtectedPage(raw) ? raw : null;
+}
+export function readDeniedPage(search) {
+    const raw = new URLSearchParams(search).get("denied");
+    return isProtectedPage(raw) ? raw : null;
+}
+function redirectTo(url) {
+    window.location.replace(url);
+    throw new Error(`Akses tidak diizinkan, mengalihkan ke ${url}`);
+}
+// Check the stored session against the policy for `page`.
+//  - not logged in      -> login.html?next=<page>
+//  - role not allowed   -> own home page + ?denied=<page> (that page shows "akses ditolak")
+export function requireAccess(page) {
     const s = getSession();
     if (s === null)
-        return redirectToLogin();
-    return s;
-}
-export function requireAdmin() {
-    const s = getSession();
-    if (s === null || (s.role !== "admin" && s.role !== "moderator")) {
-        return redirectToLogin();
+        return redirectTo(`login.html?next=${encodeURIComponent(page)}`);
+    if (!canAccess(s.role, page)) {
+        return redirectTo(`${homeFor(s.role)}?denied=${encodeURIComponent(page)}`);
     }
     return s;
+}
+// Guard for a page module: runs the check now, and again whenever the session may have
+// changed behind the page (logout/login in another tab, or Back button restoring a cached page).
+export function protectPage(page) {
+    const session = requireAccess(page);
+    window.addEventListener("pageshow", (e) => {
+        if (e.persisted)
+            requireAccess(page);
+    });
+    window.addEventListener("storage", (e) => {
+        if (e.key === null || e.key === KEYS.token || e.key === KEYS.role || e.key === KEYS.name) {
+            requireAccess(page);
+        }
+    });
+    return session;
 }
 // fetch wrapper: network failures become one readable message (try/catch on every network call).
 async function request(url, init) {

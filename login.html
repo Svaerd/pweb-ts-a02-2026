@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<br><!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -21,7 +21,11 @@
 
     <div class="card">
       <h1 class="card-title">Masuk ke Akun</h1>
-      <p class="card-subtitle">Silakan masukkan username dan password petugas Anda.</p>
+      <p class="card-subtitle">Silakan masukkan username dan password Anda.</p>
+
+      <div id="login-notice" class="alert alert-info" style="display: none;" role="status">
+        <span id="login-notice-text">Silakan masuk terlebih dahulu.</span>
+      </div>
 
       <div id="error-message" class="alert alert-error" style="display: none;" role="alert">
         <span id="error-text"></span>
@@ -64,25 +68,44 @@
             <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-admin">
               Gunakan Admin
             </button>
-            <span class="text-muted" style="margin-left: 6px;">(emilys / emilyspass) &rarr; Dashboard Admin</span>
+            <span class="text-muted" style="margin-left: 6px;">(emilys / emilyspass) &rarr; role admin &rarr; Dashboard Admin</span>
           </div>
           <div>
             <button type="button" class="btn btn-secondary btn-sm" id="btn-fill-user">
               Gunakan Operator
             </button>
-            <span class="text-muted" style="margin-left: 6px;">(michaelw / michaelwpass) &rarr; Halaman Operator</span>
+            <span class="text-muted" style="margin-left: 6px;">(michaelw / michaelwpass) &rarr; role user &rarr; Panel Operator</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div style="text-align: center; margin-top: 24px; font-size: 14px;">
-      <span class="text-muted">Akses Halaman Publik:</span><br>
-      <div style="display: flex; justify-content: center; gap: 16px; margin-top: 8px;">
-        <a href="ambil-antrian.html" style="color: var(--cta); font-weight: 600; text-decoration: none;">&rarr; Ambil Antrian Mandiri</a>
-        <a href="layar.html" style="color: var(--cta); font-weight: 600; text-decoration: none;">&rarr; Layar Monitor Antrian</a>
+    <section class="card" style="margin-top: 24px;" aria-labelledby="access-heading">
+      <h2 id="access-heading" class="card-title" style="font-size: 18px;">Hak Akses per Role</h2>
+      <p class="card-subtitle">Semua halaman wajib login. Tanpa login, setiap halaman akan dialihkan ke halaman ini.</p>
+      <div class="table-responsive">
+        <table>
+          <caption class="sr-only">Role dan halaman yang boleh dibuka</caption>
+          <thead>
+            <tr>
+              <th scope="col">Role</th>
+              <th scope="col">Halaman yang boleh dibuka</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Admin</th><td>Dashboard Admin, Panel Operator, Layar Antrian, Ambil Antrian</td></tr>
+            <tr><th scope="row">Moderator</th><td>Sama dengan Admin</td></tr>
+            <tr><th scope="row">User</th><td>Panel Operator, Layar Antrian, Ambil Antrian. <strong>Ditolak:</strong> Dashboard Admin</td></tr>
+            <tr><th scope="row">Belum login</th><td><strong>Ditolak:</strong> semua halaman (dialihkan ke halaman login)</td></tr>
+          </tbody>
+        </table>
       </div>
-    </div>
+      <ul class="text-muted" style="margin: 14px 0 0; padding-left: 20px; font-size: 13px;">
+        <li><strong>Admin / Moderator</strong> (hak akses sama): kelola jenis antrian, reset antrian (Dashboard Admin), serta semua fitur User.</li>
+        <li><strong>User</strong>: memanggil, melewati, dan menyelesaikan tiket di Panel Operator; melihat Layar; mengambil tiket.</li>
+        <li>User yang membuka Dashboard Admin akan dikembalikan ke Panel Operator dengan pesan "Akses ditolak".</li>
+      </ul>
+    </section>
   </div>
 </body>
 </html>

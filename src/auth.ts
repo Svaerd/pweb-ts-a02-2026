@@ -1,4 +1,4 @@
-import { clearSessionFields, isRecord, loadSessionFields, saveSessionFields } from "./storage.js";
+import { KEYS, clearSessionFields, isRecord, loadSessionFields, saveSessionFields } from "./storage.js";
 import type { Role } from "./types.js";
 
 export interface Session {
@@ -35,26 +35,84 @@ export function logout(): void {
   window.location.href = "login.html";
 }
 
-// Guards: call first in protected page modules, before any render.
-// If the check fails the browser is sent to login.html and an Error is thrown,
-// so the rest of the page module never runs with a missing session.
-function redirectToLogin(): never {
-  window.location.replace("login.html");
-  throw new Error("Sesi tidak valid, mengalihkan ke login.html");
+// ---------------------------------------------------------------------------
+// Role access policy (single source of truth for every guard and the login page).
+// Semua halaman di bawah ini WAJIB login. Tidak ada lagi halaman publik.
+// moderator = hak akses sama dengan admin.
+// ---------------------------------------------------------------------------
+export type ProtectedPage = "index.html" | "operator.html" | "layar.html" | "ambil-antrian.html";
+
+export const ALL_ROLES: readonly Role[] = ["admin", "moderator", "user"];
+const ADMIN_ROLES: readonly Role[] = ["admin", "moderator"];
+
+export const ROLE_ACCESS: Record<ProtectedPage, readonly Role[]> = {
+  "index.html": ADMIN_ROLES, // Dashboard Admin: kelola jenis antrian, reset antrian
+  "operator.html": ALL_ROLES, // Panel Operator: panggil / lewati / selesaikan tiket
+  "layar.html": ALL_ROLES, // Layar monitor panggilan
+  "ambil-antrian.html": ALL_ROLES, // Ambil tiket mandiri
+};
+
+export const PAGE_TITLES: Record<ProtectedPage, string> = {
+  "index.html": "Dashboard Admin",
+  "operator.html": "Panel Operator",
+  "layar.html": "Layar Antrian",
+  "ambil-antrian.html": "Ambil Antrian",
+};
+
+export function isProtectedPage(v: unknown): v is ProtectedPage {
+  return typeof v === "string" && Object.prototype.hasOwnProperty.call(ROLE_ACCESS, v);
 }
 
-export function requireAuth(): Session {
-  const s = getSession();
-  if (s === null) return redirectToLogin();
-  return s;
+export function canAccess(role: Role, page: ProtectedPage): boolean {
+  return ROLE_ACCESS[page].includes(role);
 }
 
-export function requireAdmin(): Session {
+// Landing page after login when no (allowed) `next` page was requested.
+export function homeFor(role: Role): ProtectedPage {
+  return role === "admin" || role === "moderator" ? "index.html" : "operator.html";
+}
+
+// Only known pages may be used as `next` (no open redirect), and only if the role may open them.
+export function readNextPage(search: string): ProtectedPage | null {
+  const raw = new URLSearchParams(search).get("next");
+  return isProtectedPage(raw) ? raw : null;
+}
+
+export function readDeniedPage(search: string): ProtectedPage | null {
+  const raw = new URLSearchParams(search).get("denied");
+  return isProtectedPage(raw) ? raw : null;
+}
+
+function redirectTo(url: string): never {
+  window.location.replace(url);
+  throw new Error(`Akses tidak diizinkan, mengalihkan ke ${url}`);
+}
+
+// Check the stored session against the policy for `page`.
+//  - not logged in      -> login.html?next=<page>
+//  - role not allowed   -> own home page + ?denied=<page> (that page shows "akses ditolak")
+export function requireAccess(page: ProtectedPage): Session {
   const s = getSession();
-  if (s === null || (s.role !== "admin" && s.role !== "moderator")) {
-    return redirectToLogin();
+  if (s === null) return redirectTo(`login.html?next=${encodeURIComponent(page)}`);
+  if (!canAccess(s.role, page)) {
+    return redirectTo(`${homeFor(s.role)}?denied=${encodeURIComponent(page)}`);
   }
   return s;
+}
+
+// Guard for a page module: runs the check now, and again whenever the session may have
+// changed behind the page (logout/login in another tab, or Back button restoring a cached page).
+export function protectPage(page: ProtectedPage): Session {
+  const session = requireAccess(page);
+  window.addEventListener("pageshow", (e: PageTransitionEvent) => {
+    if (e.persisted) requireAccess(page);
+  });
+  window.addEventListener("storage", (e: StorageEvent) => {
+    if (e.key === null || e.key === KEYS.token || e.key === KEYS.role || e.key === KEYS.name) {
+      requireAccess(page);
+    }
+  });
+  return session;
 }
 
 export interface LoginResponse {

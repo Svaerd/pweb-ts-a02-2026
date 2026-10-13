@@ -1,11 +1,11 @@
-import { requireAdmin, logout } from "./auth.js";
+import { protectPage, logout } from "./auth.js";
 import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority, nextTicketNumber } from "./storage.js";
 import type { QueueType, Ticket } from "./types.js";
 import { formatLabel } from "./types.js";
 
 function initAdmin(): void {
   // 1. Enforce Auth & Role Guard
-  const session = requireAdmin();
+  const session = protectPage("index.html");
 
   // 2. Setup Navbar User Information & Logout
   const userDisplayName = document.getElementById("user-display-name");

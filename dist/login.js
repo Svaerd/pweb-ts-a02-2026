@@ -1,16 +1,25 @@
-import { loginRequest, getSession } from "./auth.js";
+import { loginRequest, getSession, readNextPage, canAccess, homeFor, PAGE_TITLES } from "./auth.js";
+// Back to the page that sent the user to login, but only if this role may open it; otherwise the role's home.
+function targetFor(role) {
+    const next = readNextPage(window.location.search);
+    if (next !== null && canAccess(role, next))
+        return next;
+    return homeFor(role);
+}
 function initLogin() {
     // If already authenticated, redirect immediately based on role
     const existingSession = getSession();
     if (existingSession !== null) {
-        if (existingSession.role === "admin" || existingSession.role === "moderator") {
-            window.location.href = "index.html";
-            return;
-        }
-        else {
-            window.location.href = "operator.html";
-            return;
-        }
+        window.location.href = targetFor(existingSession.role);
+        return;
+    }
+    // Sent here by a page guard: tell the user why.
+    const notice = document.getElementById("login-notice");
+    const noticeText = document.getElementById("login-notice-text");
+    const nextPage = readNextPage(window.location.search);
+    if (notice !== null && noticeText !== null && nextPage !== null) {
+        noticeText.textContent = `Silakan masuk terlebih dahulu untuk membuka ${PAGE_TITLES[nextPage]}. Semua halaman wajib login.`;
+        notice.style.display = "flex";
     }
     const form = document.getElementById("login-form");
     const usernameInput = document.getElementById("username");
@@ -63,13 +72,8 @@ function initLogin() {
         btnText.textContent = "Memverifikasi...";
         try {
             const session = await loginRequest(username, password);
-            // Auto redirect based on role
-            if (session.role === "admin" || session.role === "moderator") {
-                window.location.href = "index.html";
-            }
-            else {
-                window.location.href = "operator.html";
-            }
+            // Auto redirect: back to the requested page, otherwise based on role
+            window.location.href = targetFor(session.role);
         }
         catch (err) {
             submitBtn.disabled = false;

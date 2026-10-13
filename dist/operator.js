@@ -1,9 +1,9 @@
-import { requireAuth, logout } from "./auth.js";
+import { protectPage, readDeniedPage, PAGE_TITLES, logout } from "./auth.js";
 import { loadQueueTypes, loadTickets, saveTickets } from "./storage.js";
 import { compareTickets, escapeHtml } from "./types.js";
 function initOperator() {
-    // 1. Enforce Auth Guard (User or Admin/Moderator allowed)
-    const session = requireAuth();
+    // 1. Enforce Auth Guard (any logged-in role: admin, moderator, user)
+    const session = protectPage("operator.html");
     // 2. Setup Navbar User Info & Logout
     const userDisplayName = document.getElementById("user-display-name");
     const userDisplayRole = document.getElementById("user-display-role");
@@ -36,6 +36,12 @@ function initOperator() {
                 alertBox.style.display = "none";
             }, 4000);
         }
+    }
+    // Redirected here from a page this role may not open (e.g. user -> index.html).
+    const denied = readDeniedPage(window.location.search);
+    if (denied !== null) {
+        showAlert(`Akses ditolak: halaman ${PAGE_TITLES[denied]} hanya untuk admin/moderator. Role Anda (${session.role}) hanya dapat memakai Panel Operator, Layar Antrian, dan Ambil Antrian.`, "error");
+        window.history.replaceState(null, "", "operator.html");
     }
     // 4. Elements
     const selectQueue = document.getElementById("select-operator-queue");

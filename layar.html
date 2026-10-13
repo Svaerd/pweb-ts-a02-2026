@@ -128,11 +128,19 @@
       </span>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 20px;">
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
       <div class="layar-clock" id="display-clock">00:00:00</div>
       <button type="button" id="btn-fullscreen" class="btn btn-outline btn-sm">
         Layar Penuh (Full Screen)
       </button>
+      <a href="index.html" id="link-admin-dashboard" class="btn btn-outline btn-sm">Dashboard Admin</a>
+      <a href="operator.html" class="btn btn-outline btn-sm">Panel Operator</a>
+      <a href="ambil-antrian.html" class="btn btn-outline btn-sm">Ambil Antrian</a>
+      <div class="navbar-user">
+        <span id="user-display-name" style="font-weight: 600;">Pengguna</span>
+        <span id="user-display-role" class="user-role">user</span>
+      </div>
+      <button type="button" id="btn-logout" class="btn btn-secondary btn-sm" aria-label="Keluar">Keluar</button>
     </div>
   </header>
 
