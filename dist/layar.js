@@ -8,12 +8,16 @@ function initLayar() {
     const userDisplayRole = document.getElementById("user-display-role");
     const btnLogout = document.getElementById("btn-logout");
     const linkAdmin = document.getElementById("link-admin-dashboard");
+    const linkOperator = document.getElementById("link-operator");
     if (userDisplayName !== null)
         userDisplayName.textContent = session.name;
     if (userDisplayRole !== null)
         userDisplayRole.textContent = session.role;
     if (linkAdmin !== null && session.role !== "admin" && session.role !== "moderator") {
         linkAdmin.style.display = "none";
+    }
+    if (linkOperator !== null && (session.role !== "admin" && session.role !== "moderator")) {
+        linkOperator.style.display = "none";
     }
     if (btnLogout !== null) {
         btnLogout.addEventListener("click", () => {

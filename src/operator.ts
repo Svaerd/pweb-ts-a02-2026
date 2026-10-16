@@ -48,7 +48,7 @@ function initOperator(): void {
   const denied = readDeniedPage(window.location.search);
   if (denied !== null) {
     showAlert(
-      `Akses ditolak: halaman ${PAGE_TITLES[denied]} hanya untuk admin/moderator. Role Anda (${session.role}) hanya dapat memakai Panel Operator, Layar Antrian, dan Ambil Antrian.`,
+      `Akses ditolak: halaman ${PAGE_TITLES[denied]} hanya untuk admin/moderator. Role Anda (${session.role}) dapat memakai Layar Antrian dan Ambil Antrian.`,
       "error",
     );
     window.history.replaceState(null, "", "operator.html");

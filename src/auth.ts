@@ -47,7 +47,7 @@ const ADMIN_ROLES: readonly Role[] = ["admin", "moderator"];
 
 export const ROLE_ACCESS: Record<ProtectedPage, readonly Role[]> = {
   "index.html": ADMIN_ROLES, // Dashboard Admin: kelola jenis antrian, reset antrian
-  "operator.html": ALL_ROLES, // Panel Operator: panggil / lewati / selesaikan tiket
+  "operator.html": ADMIN_ROLES, // Panel Operator: panggil / lewati / selesaikan tiket
   "layar.html": ALL_ROLES, // Layar monitor panggilan
   "ambil-antrian.html": ALL_ROLES, // Ambil tiket mandiri
 };
@@ -69,7 +69,7 @@ export function canAccess(role: Role, page: ProtectedPage): boolean {
 
 // Landing page after login when no (allowed) `next` page was requested.
 export function homeFor(role: Role): ProtectedPage {
-  return role === "admin" || role === "moderator" ? "index.html" : "operator.html";
+  return role === "admin" || role === "moderator" ? "index.html" : "ambil-antrian.html";
 }
 
 // Only known pages may be used as `next` (no open redirect), and only if the role may open them.

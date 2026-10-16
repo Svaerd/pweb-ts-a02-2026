@@ -1,6 +1,6 @@
 import { loadQueueTypes, saveQueueTypes, loadTickets, saveTickets, isPriority, nextTicketNumber } from "./storage.js";
 import { formatLabel } from "./types.js";
-import { protectPage, requireAccess, logout } from "./auth.js";
+import { protectPage, requireAccess, logout, readDeniedPage, PAGE_TITLES } from "./auth.js";
 function initAmbil() {
     // Every role must be logged in to take a ticket (guard runs before any render).
     const session = protectPage("ambil-antrian.html");
@@ -40,6 +40,12 @@ function initAmbil() {
                 alertBox.style.display = "none";
             }, 5000);
         }
+    }
+    // Redirected here from a page this role may not open (e.g. user -> index.html or operator.html).
+    const denied = readDeniedPage(window.location.search);
+    if (denied !== null) {
+        showAlert(`Akses ditolak: halaman ${PAGE_TITLES[denied]} hanya untuk admin/moderator. Role Anda (${session.role}) dapat memakai Layar Antrian dan Ambil Antrian.`, "error");
+        window.history.replaceState(null, "", "ambil-antrian.html");
     }
     function clearAlert() {
         if (alertBox !== null) {
